@@ -18,19 +18,16 @@ export class ProductosController {
     { id: '5', nombre: 'Galletas', categoria: 'Snacks', stock: 0, fechaVencimiento: '2025-12-01' },
   ];
 
-  // GET /productos
   @Get('')
   getProductos() {
     return this.productos;
   }
 
-  // GET /productos/sin-stock
   @Get('sin-stock')
   getProductosSinStock() {
     return this.productos.filter((producto) => producto.stock === 0);
   }
 
-  // GET /productos/vencidos
   @Get('vencidos')
   getProductosVencidos() {
     const hoy = new Date();
@@ -39,7 +36,6 @@ export class ProductosController {
     );
   }
 
-  // GET /productos/categoria/Lácteos
   @Get('categoria/:categoria')
   getProductosPorCategoria(@Param('categoria') categoria: string) {
     return this.productos.filter(
@@ -47,7 +43,6 @@ export class ProductosController {
     );
   }
 
-  // GET /productos/1
   @Get(':id')
   getProductoPorId(@Param('id') id: string) {
     return this.productos.find((producto) => producto.id === id);

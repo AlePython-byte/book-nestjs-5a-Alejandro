@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 
 interface User {
   id: string;
@@ -82,4 +82,67 @@ export class UsersController {
             return {result: 'User no encontrado'};
         }
     }
+
+    @Post()
+    createUser(@Body() userPayload: User) {
+        console.log('.:: user: ', userPayload);
+        // user.id = no debe existir
+        // user.correo = no debe existir
+        // si el usuario existe -> retornar "el usuario"
+        const data = this.users.find((user) => user.id === userPayload.id || user.email === userPayload.email);
+        if(data) {
+            return {
+            msg: "El usuario ya se encuentra registrado"
+            }
+
+        }
+        this.users.push(userPayload);
+        return {
+            msg: 'Usuario creado exitosamente',
+            data: userPayload 
+        }
+    }
+
+    @Delete(':id')
+    deleteUser(@Param('id') id: string) {
+
+        console.log('.:: UserID: ', id);
+        const position = this.users.findIndex((user) => user.id === id);
+        console.log('.:: Position: ', position);
+        this.users.splice(position, 1);
+        if (position === -1) {
+            return {
+                msg: "No existe el ID"
+            }
+        }
+
+        return {
+            msg: "Usuario eliminado con exito"
+        }
+    }
+
+    @Put(':id')
+    updateUser(@Param('id') id: string, @Body() userChanges: User) {
+        console.log('.:: UserID Update: ', id);
+        console.log('.:: UserChanges: ', userChanges);
+
+        const position = this.users.findIndex((user) => user.id === id);
+        if (position === -1) {
+            return {
+                msg: "No existe el ID"
+            }
+        }
+
+        const existingUser = this.users[position];
+        console.log('.:: Existing User: ', existingUser);
+
+        const updatedUser = { ...existingUser, ...userChanges };
+        this.users[position] = updatedUser;
+
+        return {
+            msg: "Usuario actualizado con exito",
+            data: updatedUser
+        }
+    }
+
 }    

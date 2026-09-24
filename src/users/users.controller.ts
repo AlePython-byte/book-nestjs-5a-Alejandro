@@ -1,148 +1,158 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, NotFoundException, Param, Post, Put, UnprocessableEntityException } from '@nestjs/common';
+import { CreateUserDto } from './user.dto';
 
 interface User {
   id: string;
   name: string;
   email: string;
 }
-@Controller("users")
+
+@Controller('users')
 export class UsersController {
+  private users: User[] = [
+    {
+      id: '1',
+      name: 'Maria',
+      email: 'maria@correo.com',
+    },
+    {
+      id: '2',
+      name: 'Carlos',
+      email: 'carlos@correo.com',
+    },
+    {
+      id: '3',
+      name: 'Ana',
+      email: 'ana@correo.com',
+    },
+    {
+      id: '4',
+      name: 'Luis',
+      email: 'luis@correo.com',
+    },
+    {
+      id: '5',
+      name: 'Sofia',
+      email: 'sofia@correo.com',
+    },
+    {
+      id: '6',
+      name: 'Mateo',
+      email: 'mateo@correo.com',
+    },
+    {
+      id: '7',
+      name: 'Lucia',
+      email: 'lucia@correo.com',
+    },
+    {
+      id: '8',
+      name: 'Diego',
+      email: 'diego@correo.com',
+    },
+    {
+      id: '9',
+      name: 'Elena',
+      email: 'elena@correo.com',
+    },
+    {
+      id: '10',
+      name: 'Javier',
+      email: 'javier@correo.com',
+    },
+  ];
 
-   private users: User[] = [
-    {
-        id: "1",
-        name: "Alejandro",
-        email: "alejandro@correo.com"
-    },
-    {
-        id: "2",
-        name: "David",
-        email: "david@correo.com"
-    },
-    {
-        id: "3",
-        name: "Luis",
-        email: "luis@correo.com"
-    },
-    {
-        id: "4",
-        name: "Jorge",
-        email: "jorge@correo.com"
-    },
-    {
-        id: "5",
-        name: "Danilo",
-        email: "danilo@correo.com"
-    },
-    {
-        id: "6",
-        name: "Camila",
-        email: "camila@correo.com"
-    },
-    {
-        id: "7",
-        name: "Sebastian",
-        email: "sebastian@correo.com"
-    },
-    {
-        id: "8",
-        name: "Valentina",
-        email: "valentina@correo.com"
-    },
-    {
-        id: "9",
-        name: "Santiago",
-        email: "santiago@correo.com"
-    },
-    {
-        id: "10",
-        name: "Laura",
-        email: "laura@correo.com"
-    }
-];
-    @Get("")
-    getUsers() {
-        return this.users;
-    }
+  @Get('')
+  getUsers() {
+    return this.users;
+  }
 
-    @Get(":id")
-    getUserById(@Param("id") id: string) {
-        console.log(".:: User ID: ", id);
-        const user = this.users.find((user) => user.id === id);
-        console.log("usuario buscado: ", user)
-        return user;
-    }
-
-    @Get('search/:name')
-    getUserEmailByName(@Param('name') name: string) {
-        const data = this.users.find((user) => user.name === name);
-        if (data) {
-            return {result: data?.email};
-        } else {
-            return {result: 'User no encontrado'};
-        }
+  @Get(':id')
+  getUserById(@Param('id') id: string) {
+    console.log('.:: UserID:', id);
+    const data = this.users.find((user) => user.id === id);
+    console.log('.:: data: ', data);
+    if (data === undefined) {
+      // Código para simular un error de usuario no encontrado
+      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
     }
 
-    @Post()
-    createUser(@Body() userPayload: User) {
-        console.log('.:: user: ', userPayload);
-        // user.id = no debe existir
-        // user.correo = no debe existir
-        // si el usuario existe -> retornar "el usuario"
-        const data = this.users.find((user) => user.id === userPayload.id || user.email === userPayload.email);
-        if(data) {
-            return {
-            msg: "El usuario ya se encuentra registrado"
-            }
-
-        }
-        this.users.push(userPayload);
-        return {
-            msg: 'Usuario creado exitosamente',
-            data: userPayload 
-        }
+    // Código para simular un error de permisos
+    if (data.id === '1') {
+      throw new ForbiddenException(`Usuario con ID ${id} no tiene permisos para acceder a este recurso`);
     }
 
-    @Delete(':id')
-    deleteUser(@Param('id') id: string) {
+    return {
+      msg: 'Usuario encontrado',
+      data,
+    };
+  }
 
-        console.log('.:: UserID: ', id);
-        const position = this.users.findIndex((user) => user.id === id);
-        console.log('.:: Position: ', position);
-        this.users.splice(position, 1);
-        if (position === -1) {
-            return {
-                msg: "No existe el ID"
-            }
-        }
+  @Get('search/:name')
+  getUserByName(@Param('name') name: string) {
+    const data = this.users.find((user) => user.name === name);
+    if (!data) {
+      throw new NotFoundException(`Usuario con nombre ${name} no encontrado`);
+    }
+    return {
+      data: data?.email,
+    };
+  }
 
-        return {
-            msg: "Usuario eliminado con exito"
-        }
+  @Post()
+  createUser(@Body() userPayload: CreateUserDto) {
+    const newUser = {
+      ...userPayload,
+      id: `${new Date().getTime()}`,
+    };
+    this.users.push(newUser);
+
+    return {
+      data: newUser,
+    };
+  }
+
+  @Delete(':id')
+  deleteUser(@Param('id') id: string) {
+    console.log('.:: UserID:', id);
+    const position = this.users.findIndex((user) => user.id === id);
+    console.log('.:: position: ', position);
+    if (position === -1) {
+      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
     }
 
-    @Put(':id')
-    updateUser(@Param('id') id: string, @Body() userChanges: User) {
-        console.log('.:: UserID Update: ', id);
-        console.log('.:: UserChanges: ', userChanges);
+    this.users.splice(position, 1);
 
-        const position = this.users.findIndex((user) => user.id === id);
-        if (position === -1) {
-            return {
-                msg: "No existe el ID"
-            }
-        }
+    return {
+      msg: 'Usuario eliminado con éxito',
+    };
+  }
 
-        const existingUser = this.users[position];
-        console.log('.:: Existing User: ', existingUser);
+  @Put(':id')
+  updateUser(@Param('id') id: string, @Body() userChanges: User) {
+    console.log('.:: UserID Update:', id);
+    console.log('.:: userChanges: ', userChanges);
 
-        const updatedUser = { ...existingUser, ...userChanges };
-        this.users[position] = updatedUser;
-
-        return {
-            msg: "Usuario actualizado con exito",
-            data: updatedUser
-        }
+    const position = this.users.findIndex((user) => user.id === id);
+    if (position === -1) {
+      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
     }
 
-}    
+    const existingUser = this.users[position];
+    console.log('.:: existingUser: ', existingUser);
+
+    // Evaluar si el correo tiene el formato válido antes de actualizarlo
+    const email = userChanges.email;
+    if (email && !email.includes('@')) {
+      throw new UnprocessableEntityException(`El correo electrónico ${email} no tiene un formato válido`);
+    }
+
+    const updatedUser = { ...existingUser, ...userChanges };
+    this.users[position] = updatedUser;
+
+    return {
+      msg: 'Usuario actualizado con éxito',
+      data: updatedUser,
+    };
+  }
+}

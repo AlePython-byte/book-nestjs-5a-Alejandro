@@ -20,7 +20,7 @@ const config: Config = {
       'ts-jest',
       {
         useESM: true,
-        tsconfig: { module: 'ES2022', moduleResolution: 'bundler' },
+        tsconfig: { module: 'ES2022', moduleResolution: 'bundler', rootDir: '.' },
       },
     ],
   },

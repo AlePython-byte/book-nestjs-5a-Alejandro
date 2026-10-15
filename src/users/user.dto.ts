@@ -11,6 +11,7 @@ export class CreateUserDto {
 }
 
 export class UpdateUserDto {
+  @IsString()
   @IsNotEmpty()
   name?: string;
 
@@ -18,7 +19,7 @@ export class UpdateUserDto {
   @IsNotEmpty()
   email?: string;
 
-@IsString()
+  @IsString()
   @IsNotEmpty()
   @Length(3, 8)
   nickname?: string;
